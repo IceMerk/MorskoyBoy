@@ -29,10 +29,10 @@ class Dot:  # Класс точек
 
 class Ship:  # Класс кораблей
     def __init__(self, na4alo, dlina, orentacia):
-        self.na4alo = na4alo
-        self.dlina = dlina
-        self.orentacia = orentacia
-        self.hp = dlina
+        self.na4alo = na4alo # Начальная точка корабля
+        self.dlina = dlina # Длина корабля
+        self.orentacia = orentacia # горизонтально или вертикально
+        self.hp = dlina # Жизни корабля равные его длине
 
     @property  # Декоратор, определяет свойства, можем вызывать функцию без call
     def dots(self):
@@ -50,9 +50,37 @@ class Ship:  # Класс кораблей
 
         return ship_dots  # Возвращаем корабль
 
+    def popal(self, shot): # Проверка на попадание в корабль
+        return shot in self.dots
 
-a = Dot(1, 1)
-b = Dot(2, 1)
-c = Dot(1, 1)
+class Board:
+    def __init__(self, size=6, hid=False):
+        self.size = size # Размер поля
+        self.hid = hid # Нужно ли скрывать тип bool
+        self.field = [['О']*6 for i in range(self.size)] # Поле
+        self.ships = [] # Спискок кораблей
+        self.busy_ships = [] # Список выстрелов мимо/по кораблям
+        self.death_ships = 0 # Список убитых кораблей
 
-print([a, b, c])
+    def add_ship(self):
+        pass
+
+    def contour(self):
+        pass
+
+    def __str__(self): # Отрисовка поля
+        v = ' | 1 | 2 | 3 | 4 | 5 | 6 |' # Поле с цифрами сверху
+        for i, k in enumerate(self.field): # Рисуем поле и добавляем цифры сбоку
+            v += f'\n{i + 1} | {"|".join(k)} |'
+
+        if self.hid: # Если нужно скрыть корабли hid = True
+            v = v.replace('■', 'О')
+
+    def out(self):
+        pass
+
+    def shot(self):
+        pass
+
+s = Ship(Dot(1, 2), 4, 0)
+print(s.popal(Dot(2, 2)))
