@@ -217,11 +217,11 @@ class Game:  # В этом классе: генерация доски, прив
                 step -= 1
 
             if self.ai.board.death_ships == 7:  # Проверяем на убитых
-                print("\nПользователь выиграл!")
+                print("\nКапитан, Вы победили!!")
                 break
 
             if self.user.board.death_ships == 7:
-                print("\nКомпьютер выиграл!")
+                print("\nПротивник выиграл!")
                 break
             step += 1
 
