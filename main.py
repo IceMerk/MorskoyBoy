@@ -208,7 +208,7 @@ class Game:  # В этом классе: генерация доски, прив
         while True:
             print(f'\nДоска Игрока:️\n{self.user.board}️\n\nДоска компьютера:\n{self.ai.board}')
             if step % 2 == 0:  # Есди четный ход, то игрок
-                print(f'\nХодит пользователь!')
+                print(f'\nХодите Капитан!')
                 replay = self.user.move()  # Если попали, то ходим ещё раз
             else:
                 print("\nХодит компьютер!")
@@ -217,7 +217,7 @@ class Game:  # В этом классе: генерация доски, прив
                 step -= 1
 
             if self.ai.board.death_ships == 7:  # Проверяем на убитых
-                print("\nКапитан, Вы победили!!")
+                print("\nКапитан, Вы победили!!!")
                 break
 
             if self.user.board.death_ships == 7:
