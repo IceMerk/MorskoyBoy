@@ -1,21 +1,17 @@
 from random import randint
 
 
-class BoardException(Exception):
-    pass
-
-
-class BoardOutException(BoardException):  # Исключение, когда стреляем за доску
+class BoardOutException(Exception):  # Исключение, когда стреляем за доску
     def __str__(self):
         return '❌ Капитан! Сняряд улетел за доску ❌'
 
 
-class BoardUseException(BoardException):  # Исключение, когда стреляем туда же
+class BoardUseException(Exception):  # Исключение, когда стреляем туда же
     def __str__(self):
         return f'❌ Капитан, мы сюда уже стреляли ❌'
 
 
-class ShipWrongException(BoardException):  # Исключение для расстоновки кораблей
+class ShipWrongException(Exception):  # Исключение для расстоновки кораблей = None
     pass
 
 
@@ -148,7 +144,7 @@ class Player:
                 t = self.ask()  # Запрос выстрела
                 r = self.board_second.shot(t)  # Проверка на доске противника
                 return r
-            except BoardException as e:
+            except Exception as e:
                 print(e)
 
 
