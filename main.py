@@ -1,4 +1,4 @@
-from random import randint
+from random import randint, choice
 
 
 class BoardOutException(Exception):  # Исключение, когда стреляем за доску
@@ -23,9 +23,6 @@ class Dot:  # Класс точек
     def __eq__(self, other):  # Сравнение двух точек по x и y
         return self.x == other.x and self.y == other.y
 
-    def __repr__(self):  # Отладочная информация
-        return f'Dot({self.x}, {self.y})'
-
 
 class Ship:  # Класс кораблей
     def __init__(self, na4alo, dlina, orentacia):
@@ -33,22 +30,22 @@ class Ship:  # Класс кораблей
         self.dlina = dlina  # Длина корабля
         self.orentacia = orentacia  # горизонтально или вертикально
         self.hp = dlina  # Жизни корабля равные его длине
+        self.ship_dots = []  # Список в который собираем корабли
 
     @property  # Декоратор, определяет свойства, можем вызывать функцию без call
     def dots(self):
-        ship_dots = []  # Список в который собираем корабли
+
         for i in range(self.dlina):  # Собираем корабль больше 1
             other_x = self.na4alo.x
             other_y = self.na4alo.y
-
             if self.orentacia == 0:  # Смотрим как расположен корабль
                 other_x += i
             elif self.orentacia == 1:
                 other_y += i
 
-            ship_dots.append(Dot(other_x, other_y))
+            self.ship_dots.append(Dot(other_x, other_y))
 
-        return ship_dots  # Возвращаем корабль
+        return self.ship_dots  # Возвращаем корабль
 
     def popal(self, shot):  # Проверка на попадание в корабль
         return shot in self.dots
@@ -112,7 +109,7 @@ class Board:
         for ship in self.ships:  # Ищем в списке кораблей
             if dot in ship.dots:  # Сверяем - попали или нет
                 ship.hp -= 1  # Если попали, то уменьшаем хп у корабля
-                self.field[dot.x][dot.y] = 'Х'
+                self.field[dot.x][dot.y] = 'X'
                 if ship.hp == 0:  # Если хп не осталось
                     self.death_ships += 1  # Пополняем счетчик мертвых
                     self.contour(ship, view=True)  # Рисуем вокруг него точки
@@ -128,6 +125,9 @@ class Board:
 
     def start(self):  # Обнуляем список занятого
         self.busy_ships = []
+
+    def chek(self):  # Метод проверки мертвых к живым кораблям
+        return self.death_ships == len(self.ships)
 
 
 class Player:
@@ -149,10 +149,13 @@ class Player:
 
 
 class AI(Player):  # Класс комьютера/противника
+
     def ask(self):  # Метод случайной стрельбы, (нужно докрутить проверку)
-        dot = Dot(randint(0, 5), randint(0, 5))
-        print(f'Противник открыл огонь по: {dot.x + 1} {dot.y + 1}')
-        return dot
+        while True:
+            dot = Dot(randint(0, 5), randint(0, 5))
+            if dot not in self.board_second.busy_ships:  # Если в списке нету хода, иначе пробуем ещё раз
+                print(f'Противник открыл огонь по: {dot.x + 1} {dot.y + 1}')
+                return dot
 
 
 class User(Player):  # Игрока
@@ -174,17 +177,23 @@ class User(Player):  # Игрока
 class Game:  # В этом классе: генерация доски, приветствие пользователя, старт игры
     def __init__(self, size=6):
         self.size = size  # Размер поля
+        self.park_ships = [3, 2, 2, 1, 1, 1, 1]  # Парк кораблей по размерам
         board_user = self.create_board()  # Создаем поле для игрока
         board_ai = self.create_board()  # Создаем поле для компа
         board_ai.hid = True  # Скрыть корабли компа
         self.user = User(board_user, board_ai)  # Создаем экземпляр игрока и передаем в него доски
         self.ai = AI(board_ai, board_user)  # Создаем компа и передаем в него доски
 
+    def create_board(self):  # Метод создание доски
+        board = None
+        while board is None:  # Пока поле пустое, пытаемся создать поле
+            board = self.random_board()
+        return board  # Возвращаем поле с короблями
+
     def random_board(self):  # Метод перебора вариантов/генерации для доски
-        park_ships = [3, 2, 2, 1, 1, 1, 1]  # Парк кораблей по размерам
         board = Board(size=self.size)
         step = 0  # Счетчик шагов для цикла ниже
-        for i in park_ships:  # Берем корабль из списка
+        for i in self.park_ships:  # Берем корабль из списка
             while True:
                 step += 1
                 if step > 2500:  # Общее колличество попыток поставить корабль
@@ -203,10 +212,13 @@ class Game:  # В этом классе: генерация доски, прив
         print("⚓️ ️Добро пожаловать ⚓️️\n⚓️  на борт судна  ⚓️\n⚓️     Капитан!    ⚓️\n")
         print("Отдат приказ - выстрелить: x y \nx - номер строки\ny - номер столбца")
 
+    def print_board(self):
+        print(f'\nДоска Игрока:️\n{self.user.board}️\n\nДоска компьютера:\n{self.ai.board}')
+
     def loop(self):  # Метод запускает цикл игры
         step = 0  # Колличество ходов
         while True:
-            print(f'\nДоска Игрока:️\n{self.user.board}️\n\nДоска компьютера:\n{self.ai.board}')
+            self.print_board()
             if step % 2 == 0:  # Есди четный ход, то игрок
                 print(f'\nХодите Капитан!')
                 replay = self.user.move()  # Если попали, то ходим ещё раз
@@ -216,11 +228,13 @@ class Game:  # В этом классе: генерация доски, прив
             if replay:  # уменьшаем ход на один, чтобы походить ещё раз
                 step -= 1
 
-            if self.ai.board.death_ships == 7:  # Проверяем на убитых
+            if self.ai.board.chek():  # Проверяем на убитых
+                self.print_board()
                 print("\nКапитан, Вы победили!!!")
                 break
 
-            if self.user.board.death_ships == 7:
+            if self.user.board.chek():
+                self.print_board()
                 print("\nПротивник выиграл!")
                 break
             step += 1
@@ -228,12 +242,6 @@ class Game:  # В этом классе: генерация доски, прив
     def start(self):  # Метод запускает привветствие и игру
         self.greet()
         self.loop()
-
-    def create_board(self):  # Метод создание доски
-        board = None
-        while board is None:  # Пока поле пустое, пытаемся создать поле
-            board = self.random_board()
-        return board  # Возвращаем поле с короблями
 
 
 g = Game()
